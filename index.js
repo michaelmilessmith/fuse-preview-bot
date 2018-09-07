@@ -2,6 +2,7 @@ var express = require('express')
 var app = express()
 const bodyParser = require('body-parser')
 const request = require('superagent')
+require('dotenv').config()
 
 app.use(bodyParser.json())
 
@@ -17,7 +18,7 @@ app.get('/', function(req, res) {
       .post('https://slack.com/api/chat.unfurl')
       .type('form')
       .send({
-        token: "xoxp-4672449302-328494600469-430933377587-a4114c36cc41e5d210366310ffb8061d",
+        token: process.env.OATH_TOKEN,
         channel: "D9NA5EYBE",
         ts: "1536314513.000100",
         unfurls,
@@ -47,7 +48,7 @@ app.post('/', function(req, res) {
       .post('https://slack.com/api/chat.unfurl')
       .type('form')
       .send({
-        token: "xoxp-4672449302-328494600469-430933377587-a4114c36cc41e5d210366310ffb8061d",
+        token: process.env.OATH_TOKEN,
         channel,
         ts,
         unfurls,
