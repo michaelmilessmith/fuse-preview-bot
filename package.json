@@ -1,0 +1,11 @@
+{
+  "name": "fuse-preview-bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/michaelmilessmith/fuse-preview-bot.git",
+  "author": "Michael Smith <michael.smith@fuseuniversal.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.16.3"
+  }
+}
