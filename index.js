@@ -17,7 +17,7 @@ app.post('/', function(req, res) {
     request
       .post('https://slack.com/api/chat.unfurl')
       .send({
-        token: "xoxp-4672449302-328494600469-430933377587-a4114c36cc41e5d210366310ffb8061d",
+        token: "3K00R94KynR7HmaLgxeXIbJK",
         channel,
         ts,
         unfurls: {
@@ -27,7 +27,7 @@ app.post('/', function(req, res) {
         },
         user_auth_required: true
       })
-      .then(res => console.log(res))
+      .then(res => console.log(res.body))
   }
   res.status(200).send()
 })
