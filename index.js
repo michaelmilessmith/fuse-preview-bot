@@ -5,6 +5,28 @@ const request = require('superagent')
 
 app.use(bodyParser.json())
 
+app.get('/', function(req, res) {
+    const url = `https://fuse.fuseuniversal.com/communities/908/contents/168364`
+    const unfurls = JSON.stringify({
+      [url]: {
+        text: 'Every day is the test.'
+      }
+    })
+    console.log(unfurls)
+    request
+      .post('https://slack.com/api/chat.unfurl')
+      .type('form')
+      .send({
+        token: "xoxp-4672449302-328494600469-430933377587-a4114c36cc41e5d210366310ffb8061d",
+        channel: "D9NA5EYBE",
+        ts: "1536314513.000100",
+        unfurls,
+        // user_auth_required: true
+      })
+      .then(res => console.log(res.body))
+  res.status(200).send()
+})
+
 app.post('/', function(req, res) {
   console.log(req.body)
   if (req.body.challenge) {
@@ -15,11 +37,12 @@ app.post('/', function(req, res) {
     console.log(req.body.event.links)
     const { token, event: { channel, links, message_ts: ts } } = req.body
     const { url } = links[0]
-    const unfurls = encodeURIComponent({
+    const unfurls = JSON.stringify({
       [url]: {
         text: 'Every day is the test.'
       }
     })
+    console.log(unfurls)
     request
       .post('https://slack.com/api/chat.unfurl')
       .type('form')
