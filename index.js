@@ -16,8 +16,9 @@ app.post('/', function(req, res) {
     const { token, event: { channel, links, message_ts: ts } } = req.body
     request
       .post('https://slack.com/api/chat.unfurl')
+      .type('form')
       .send({
-        token: "3K00R94KynR7HmaLgxeXIbJK",
+        token: "xoxp-4672449302-328494600469-430933377587-a4114c36cc41e5d210366310ffb8061d",
         channel,
         ts,
         unfurls: {
@@ -25,7 +26,7 @@ app.post('/', function(req, res) {
             text: 'Every day is the test.'
           }
         },
-        user_auth_required: true
+        // user_auth_required: true
       })
       .then(res => console.log(res.body))
   }
