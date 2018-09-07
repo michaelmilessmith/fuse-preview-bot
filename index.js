@@ -14,6 +14,7 @@ app.post('/', function(req, res) {
   if (req.body.event.links) {
     console.log(req.body.event.links)
     const { token, event: { channel, links, message_ts: ts } } = req.body
+    const { url } = links[0]
     request
       .post('https://slack.com/api/chat.unfurl')
       .type('form')
@@ -22,7 +23,7 @@ app.post('/', function(req, res) {
         channel,
         ts,
         unfurls: {
-          'https://fuse.fuseuniversal.com/': {
+          [url]: {
             text: 'Every day is the test.'
           }
         },
