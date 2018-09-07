@@ -5,6 +5,9 @@
   "repository": "https://github.com/michaelmilessmith/fuse-preview-bot.git",
   "author": "Michael Smith <michael.smith@fuseuniversal.com>",
   "license": "MIT",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
     "express": "^4.16.3"
   }
