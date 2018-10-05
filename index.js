@@ -35,6 +35,7 @@ app.post('/', async (req, res) => {
       await postNotification({ channel, ts, unfurls })
       return res.status(200).send()
     } catch (err) {
+      console.log(err)
       if (err.status === 404) return res.status(404).send('Invalid link or inaccessable page')
       return res.status(500).send(err)
     }

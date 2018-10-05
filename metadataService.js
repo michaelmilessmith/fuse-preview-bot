@@ -1,7 +1,9 @@
 const domino = require('domino')
+const stripTags = require('striptags')
+const unescape = require('unescape')
 const { getMetadata } = require('page-metadata-parser')
 
-const { getLearningPlanMetadata } = require('./apiService')
+const { getLearningPlanMetadata, getEventMetadata, getTopicMetadata } = require('./apiService')
 
 const parseMetadata = ({ page, url }) => {
   const doc = domino.createWindow(page.text).document
@@ -19,19 +21,42 @@ const parseMetadata = ({ page, url }) => {
   }
 }
 
-const filterMetadata = async ({ title, url }) => {
+const filterMetadata = async ({ url }) => {
+  let id
   switch (true) {
-    case /learning plan/i.test(title):
-      const id = url.match(/\d+/)[0]
+    case /plans/i.test(url):
+      id = url.match(/\d+/)[0]
       return await getLearningPlanMetadata({ id })
+    case /event/i.test(url):
+      id = url.match(/\d+/)[0]
+      return await getEventMetadata({ id })
+    case /topic/i.test(url): 
+      id = url.match(/\d+/)[0]
+      return await getTopicMetadata({id})
+    default: 
+      return false
   }
 }
 
 const getExtraMetadata = async params => {
   const res = await filterMetadata(params)
-  const { thumbnail_3x_url, title } = res
-
-  return createUnfurls({ image_url: thumbnail_3x_url, title, url: params.url })
+  if (!res) return 
+  const { image_url, title, description, asset_url, name } = res
+  if (image_url && title) {
+    // Learning Plan
+    return createUnfurls({
+      image_url,
+      title,
+      description,
+      url: params.url
+    })
+  }
+  if (description && name && asset_url) {
+    // Event
+    let image_url = `https://fuse.fuseuniversal.com/${asset_url}`
+    let text = unescape(stripTags(description))
+    return createUnfurls({ image_url, title: name, text, url: params.url })
+  }
 }
 
 const createMetadata = ({ page, url }) => {
