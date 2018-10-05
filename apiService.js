@@ -4,12 +4,18 @@ const BASE_URL = 'https://fuse.fuseuniversal.com/api/v3.1/'
 const LEARNING_PLANS = 'learning_plans/'
 const EVENTS = 'events/'
 const TOPICS = 'topics/'
+const TOKEN = 'token'
+const SLACKBOT = 'slackbot'
 
 const fetchPage = async url => {
-  const res = await request.get(url).query({
-    auth_token: process.env.FUSE_AUTH_TOKEN
-  })
-  return res
+  try {
+    const res = await request.get(url).query({
+      auth_token: process.env.FUSE_AUTH_TOKEN
+    })
+    return res
+  } catch (err) {
+    throw err
+  }
 }
 
 const postNotification = async ({ channel, ts, unfurls }) => {
@@ -27,12 +33,12 @@ const postNotification = async ({ channel, ts, unfurls }) => {
 const getLearningPlanMetadata = async ({ id }) => {
   const {
     body: {
-      learning_plan: { title, thumbnail_3x_url }
+      learning_plan: { title, thumbnail_url }
     }
   } = await request.get(`${BASE_URL}${LEARNING_PLANS}${id}`).query({
     auth_token: process.env.FUSE_AUTH_TOKEN
   })
-  return { image_url: thumbnail_3x_url, title }
+  return { image_url: thumbnail_url, title }
 }
 
 const getEventMetadata = async ({ id }) => {
@@ -53,12 +59,22 @@ const getTopicMetadata = async ({ id }) => {
   return { title: name, image_url, description }
 }
 
-
+const authenticate = async () => {
+  const { body } = await request
+    .post(`${BASE_URL}${TOKEN}`)
+    .type('form')
+    .send({
+      login_name: SLACKBOT,
+      password: process.env.SLACKBOT_PASSWORD
+    })
+  return body
+}
 
 module.exports = {
   fetchPage,
   postNotification,
   getLearningPlanMetadata,
-  getEventMetadata, 
-  getTopicMetadata
+  getEventMetadata,
+  getTopicMetadata,
+  authenticate
 }

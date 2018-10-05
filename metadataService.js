@@ -3,7 +3,11 @@ const stripTags = require('striptags')
 const unescape = require('unescape')
 const { getMetadata } = require('page-metadata-parser')
 
-const { getLearningPlanMetadata, getEventMetadata, getTopicMetadata } = require('./apiService')
+const {
+  getLearningPlanMetadata,
+  getEventMetadata,
+  getTopicMetadata
+} = require('./apiService')
 
 const parseMetadata = ({ page, url }) => {
   const doc = domino.createWindow(page.text).document
@@ -21,53 +25,47 @@ const parseMetadata = ({ page, url }) => {
   }
 }
 
-const filterMetadata = async ({ url }) => {
-  let id
+const matchAPIRequest = async url => {
+  const id = url.match(/\d+/)[0]
   switch (true) {
     case /plans/i.test(url):
-      id = url.match(/\d+/)[0]
       return await getLearningPlanMetadata({ id })
     case /event/i.test(url):
-      id = url.match(/\d+/)[0]
       return await getEventMetadata({ id })
-    case /topic/i.test(url): 
-      id = url.match(/\d+/)[0]
-      return await getTopicMetadata({id})
-    default: 
+    case /topic/i.test(url):
+      return await getTopicMetadata({ id })
+    default:
       return false
   }
 }
 
-const getExtraMetadata = async params => {
-  const res = await filterMetadata(params)
-  if (!res) return 
+const getExtraData = async url => {
+  const res = await matchAPIRequest(url)
+  if (!res) return
   const { image_url, title, description, asset_url, name } = res
   if (image_url && title) {
-    // Learning Plan
-    return createUnfurls({
+    // Learning Plan or Topic
+    return {
       image_url,
       title,
       description,
-      url: params.url
-    })
+      url
+    }
   }
   if (description && name && asset_url) {
     // Event
     let image_url = `https://fuse.fuseuniversal.com/${asset_url}`
     let text = unescape(stripTags(description))
-    return createUnfurls({ image_url, title: name, text, url: params.url })
+    return { image_url, title: name, text, url }
   }
 }
 
-const createMetadata = ({ page, url }) => {
+const checkMetadata = ({ page, url }) => {
   const { title, text, image_url, footer_icon } = parseMetadata({
     page,
     url
   })
-  if (!image_url || !title) {
-    return getExtraMetadata({ title, url })
-  }
-  return createUnfurls({ url, title, text, image_url, footer_icon })
+  return { url, title, text, image_url, footer_icon }
 }
 
 const createUnfurls = ({ url, title, text, image_url, footer_icon }) => {
@@ -83,4 +81,4 @@ const createUnfurls = ({ url, title, text, image_url, footer_icon }) => {
   })
 }
 
-module.exports = { createMetadata }
+module.exports = { checkMetadata, createUnfurls, getExtraData }

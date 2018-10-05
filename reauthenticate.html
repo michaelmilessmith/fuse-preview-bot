@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Reauthenticate Fuse Preview Bot</title>
+</head>
+
+<body>
+  <div>
+    Click this button to reauthenticate the Fuse Preview Bot.
+    <button class='reauthenticate-button'>Reauthenticate!!</button>
+  </div>
+
+  <script>
+    const reauthenticateButton = document.querySelector('.reauthenticate-button')
+
+    const makeReauthenticationRequest = () => {
+      return fetch('reauthenticate', { 
+        method: 'POST'
+      })
+      .then((res) => console.log(res))
+      .catch((err) => console.warn(err))
+    }
+
+  
+    reauthenticateButton.addEventListener('click', makeReauthenticationRequest)
+  </script>
+</body>
+
+</html>

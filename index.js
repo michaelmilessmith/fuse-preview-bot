@@ -2,9 +2,8 @@ var express = require('express')
 var app = express()
 const bodyParser = require('body-parser')
 const request = require('superagent')
+const { handleMessageEvent, reauthenticateEvent } = require('./events')
 
-const { fetchPage, postNotification } = require('./apiService')
-const { createMetadata } = require('./metadataService')
 
 require('dotenv').config()
 
@@ -14,36 +13,41 @@ app.get('/', function(req, res) {
   res.status(404).send('Not found!')
 })
 
+app.get('/reauthenticate', (req, res) => {
+  res.sendfile(__dirname + '/reauthenticate.html')
+})
+
 app.post('/', async (req, res) => {
-  const { body : { 
-    challenge, 
-    event
-  }} = req
+  let attempts = 0
+  const {
+    body: { challenge, event }
+  } = req
   if (challenge) {
     res.status(200).send(req.body.challenge)
     return
   }
   if (event.links) {
     try {
-      const {
-        event: { channel, links, message_ts: ts }
-      } = req.body
-      const { url } = links[0]
-      const page = await fetchPage(url)
-      
-      const unfurls = await createMetadata({ page, url })
-      await postNotification({ channel, ts, unfurls })
+      await handleMessageEvent(req.body)
       return res.status(200).send()
     } catch (err) {
-      console.log(err)
-      if (err.status === 404) return res.status(404).send('Invalid link or inaccessable page')
-      return res.status(500).send(err)
+      console.log(err.status)
+      if (err.status === 404) {
+        return res.status(404).send('Invalid link or inaccessable page')
+      } else if (err.status === 401 && attempts < process.env.RETRIES_COUNT) {
+        attempts++ 
+        console.log('authToken invalid, attempting to obtain a new one. Attempt: ', attempts)
+        await reauthenticateEvent()
+        await handleMessageEvent(req.body)
+      }
+      console.log(err.message)
+      return res.status(500).send()
     }
   }
 })
 
 app.get('/auth', (req, res) => {
-  res.sendFile(__dirname + '/add_to_slack.html')
+  res.sendfile(__dirname + '/add_to_slack.html')
 })
 
 app.get('/auth/redirect', req => {
@@ -63,6 +67,11 @@ app.get('/auth/redirect', req => {
     .catch(err => {
       console.log(err)
     })
+})
+
+app.post('/reauthenticate', async (req, res) => {
+  await reauthenticateEvent()
+  res.status(200).send('REQUEST RECEIVED')
 })
 
 const port = process.env.PORT || 3004
