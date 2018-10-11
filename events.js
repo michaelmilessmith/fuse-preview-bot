@@ -13,7 +13,8 @@ const handleMessageEvent = async req => {
     const { url } = links[0]
     const page = await fetchPage(url)
     const metadata = await checkMetadata({ page, url })
-    const unfurlData = metadata.image_url ? metadata : await getExtraData(url)
+    let unfurlData =
+      (metadata.image_url && metadata) || (await getExtraData(url)) || metadata
     await postNotification({
       channel,
       ts,
