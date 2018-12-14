@@ -3,11 +3,14 @@ var app = express()
 const bodyParser = require('body-parser')
 const request = require('superagent')
 const { handleMessageEvent, reauthenticateEvent } = require('./events')
+const cors = require('cors')
 
+const postLink = require('./postLink') 
 
 require('dotenv').config()
 
 app.use(bodyParser.json())
+app.use(cors())
 
 app.get('/', function(req, res) {
   res.status(404).send('Not found!')
@@ -45,6 +48,8 @@ app.post('/', async (req, res) => {
     }
   }
 })
+
+app.post('/links', postLink)
 
 app.get('/auth', (req, res) => {
   res.sendfile(__dirname + '/add_to_slack.html')
